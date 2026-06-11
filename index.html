@@ -274,7 +274,7 @@
             <h2>Probable pitcher performance.</h2>
             <p>
               These projections use MLB probable pitchers and season pitching stats.
-              They are useful before we add paid player-prop odds.
+              They create pitcher context before deeper player-prop modeling is added.
             </p>
           </div>
           <div class="player-grid">
@@ -355,8 +355,34 @@
             <article><span>Captured ROI</span><strong>N/A</strong><p>Waiting for saved odds.</p></article>
             <article><span>Model version</span><strong>v0.4</strong><p>Calibrated pregame.</p></article>
           </div>
+          <div class="confidence-note">
+            <span>Confidence guardrail</span>
+            <p>
+              MLB games are high variance, so SlateSignal caps model probabilities and
+              treats every lean as a research signal. A 56% model probability means a small
+              projected edge, not certainty.
+            </p>
+          </div>
           <div class="historical-backtest" id="historicalBacktest">
             <p class="empty-state">Recent model sample will appear here.</p>
+          </div>
+          <div class="results-table-wrap" id="resultsTableWrap">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Game</th>
+                  <th>Lean</th>
+                  <th>Final</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody">
+                <tr>
+                  <td colspan="5">Saved result rows will appear here.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
           <div class="backtest-days" id="backtestDays">
             <p class="empty-state">Saved lean history will appear here.</p>
@@ -403,6 +429,23 @@
             </ul>
           </article>
         </div>
+        <div class="data-source-grid">
+          <article>
+            <span>Primary source</span>
+            <h3>MLB Stats API</h3>
+            <p>Teams, schedule, scores, standings, probable pitchers, and season pitching stats come from MLB data endpoints.</p>
+          </article>
+          <article>
+            <span>Market input</span>
+            <h3>Manual or licensed odds feed</h3>
+            <p>The public preview supports manual moneyline entry. A production version would use a licensed provider for opening, live, and closing prices.</p>
+          </article>
+          <article>
+            <span>Storage path</span>
+            <h3>Local log now, database next</h3>
+            <p>The current record uses a local JSON log. The production path is hosted Postgres with scheduled daily creation and settlement jobs.</p>
+          </article>
+        </div>
       </section>
 
       <section class="market-section" id="project-notes" aria-label="Project notes">
@@ -439,14 +482,23 @@
 
       <section class="interview-section" aria-label="Interview explanation">
         <div>
-          <p class="eyebrow">Interview angle</p>
-          <h2>Why this is a strong project to talk about.</h2>
+          <p class="eyebrow">Build story</p>
+          <h2>How to explain this project in an interview.</h2>
         </div>
-        <ul>
-          <li>It has a clear audience: fans, fantasy players, sports creators, and small coaching staffs.</li>
-          <li>It can grow technically: data ingestion, APIs, prediction models, persistent storage, scheduled jobs, and alerts.</li>
-          <li>It can grow as a business: free dashboard, paid research reports, alerts, and creator tools after the model has a trustworthy record.</li>
-        </ul>
+        <div class="case-study-grid">
+          <article>
+            <span>Challenge</span>
+            <p>Sports data products can look impressive while hiding how the numbers are made. I wanted the model, factors, and limitations to be visible.</p>
+          </article>
+          <article>
+            <span>Implementation</span>
+            <p>I built a Node-backed MLB dashboard with live data ingestion, conservative model scoring, fair-line conversion, matchup explanations, and result tracking.</p>
+          </article>
+          <article>
+            <span>Next step</span>
+            <p>The production version would add persistent storage, licensed closing odds, lineup/weather/bullpen factors, and scheduled jobs to validate results over time.</p>
+          </article>
+        </div>
       </section>
 
       <section class="disclaimer-section" aria-label="Disclaimer">

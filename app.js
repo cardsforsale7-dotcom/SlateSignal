@@ -19,6 +19,7 @@ const recordCard = document.querySelector("#recordCard");
 const backtestSummary = document.querySelector("#backtestSummary");
 const backtestDays = document.querySelector("#backtestDays");
 const historicalBacktest = document.querySelector("#historicalBacktest");
+const resultsTableBody = document.querySelector("#resultsTableBody");
 const whyLeanList = document.querySelector("#whyLeanList");
 const draftkingsManual = document.querySelector("#draftkingsManual");
 const fanduelManual = document.querySelector("#fanduelManual");
@@ -39,6 +40,7 @@ const escapeHTML = (value = "") => String(value)
   .replace(/>/g, "&gt;")
   .replace(/"/g, "&quot;")
   .replace(/'/g, "&#39;");
+const safeClass = (value = "") => String(value).toLowerCase().replace(/[^a-z0-9_-]/g, "-");
 
 function normalizeName(name = "") {
   return name
@@ -631,7 +633,7 @@ function renderFavoriteBets() {
   const top = picks[0];
   const topLine = top.market.bestMoneyline
     ? ` Best captured line: ${formatAmerican(top.market.bestMoneyline.price)} at ${escapeHTML(top.market.bestMoneyline.book)}.`
-    : " No sportsbook line captured yet.";
+    : " No market line captured yet.";
   betOfDay.innerHTML = `
     <span>Top signal</span>
     <strong>${escapeHTML(top.model.leader.name)} moneyline</strong>
@@ -642,7 +644,7 @@ function renderFavoriteBets() {
     .map((pick) => {
       const marketLine = pick.market.bestMoneyline
         ? ` · best ${formatAmerican(pick.market.bestMoneyline.price)} at ${escapeHTML(pick.market.bestMoneyline.book)}`
-        : " · no sportsbook line captured";
+        : " · no market line captured";
       return `
       <article class="bet-card">
         <span>${escapeHTML(pick.away.name)} at ${escapeHTML(pick.home.name)}</span>
@@ -728,6 +730,7 @@ function renderBacktest(log) {
       <article><span>Model version</span><strong>v0.4</strong><p>Calibrated pregame.</p></article>
     `;
     historicalBacktest.innerHTML = `<p class="empty-state">Recent model sample is temporarily unavailable.</p>`;
+    resultsTableBody.innerHTML = `<tr><td colspan="5">Saved result rows are temporarily unavailable.</td></tr>`;
     return;
   }
 
@@ -749,8 +752,25 @@ function renderBacktest(log) {
   const days = log.days || [];
   if (!days.length) {
     backtestDays.innerHTML = `<p class="empty-state">Saved lean history will appear here.</p>`;
+    resultsTableBody.innerHTML = `<tr><td colspan="5">No saved model results yet.</td></tr>`;
     return;
   }
+
+  const rows = days
+    .flatMap((day) => (day.picks || []).map((pick) => ({ day, pick })))
+    .slice(0, 30);
+
+  resultsTableBody.innerHTML = rows.length
+    ? rows.map(({ day, pick }) => `
+      <tr>
+        <td>${escapeHTML(day.date)}</td>
+        <td>${escapeHTML(pick.matchup || "Matchup")}</td>
+        <td>${escapeHTML(pick.pickTeamName || "Lean pending")}</td>
+        <td>${escapeHTML(pick.finalScore || "Pending")}</td>
+        <td><span class="result-pill ${safeClass(pick.result || "pending")}">${escapeHTML(pick.result || "pending")}</span></td>
+      </tr>
+    `).join("")
+    : `<tr><td colspan="5">No saved model results yet.</td></tr>`;
 
   backtestDays.innerHTML = days
     .slice(0, 14)
@@ -828,7 +848,7 @@ async function renderHistoricalBacktest() {
       <div class="backtest-days">${samplePicks}</div>
     `;
   } catch {
-    historicalBacktest.innerHTML = `<p class="empty-state">Recent model sample is unavailable. Restart the local server after the update.</p>`;
+    historicalBacktest.innerHTML = `<p class="empty-state">Recent model sample is temporarily unavailable.</p>`;
   }
 }
 

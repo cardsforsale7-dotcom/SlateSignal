@@ -79,9 +79,11 @@ The current chat is a local explanation engine. It answers from the selected mat
 Professional polish:
 
 - The UI shows the current model version.
+- The dashboard displays MLB data freshness and market-feed status.
 - Top model leans include the leading reasons behind each signal.
 - Saved leans include a snapshot of the model factors used at run time.
-- The record view separates today, yesterday, all-time, and pending leans.
+- The Results section includes summary metrics plus a table of saved leans, final scores, and outcomes.
+- The methodology section explains confidence caps, data sources, current limits, and production upgrades.
 - The model results section summarizes saved-lean performance, captured-odds ROI when market lines are available, and a recent MLB sample using standings from before each game date.
 - The app labels outputs as model signals, not certainty.
 
