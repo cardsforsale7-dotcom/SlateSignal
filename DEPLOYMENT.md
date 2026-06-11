@@ -18,37 +18,33 @@ npm start
 
 ## 2. Environment Variables
 
-Optional now, required for pro features:
+Optional now, useful for deeper data:
 
 ```text
 THE_ODDS_API_KEY=
-STRIPE_SECRET_KEY=
-STRIPE_PRICE_ID=
-PUBLIC_BASE_URL=
 OPENAI_API_KEY=
-AUTH_PROVIDER=
 DATABASE_URL=
 ```
 
-## 3. Accounts
+## 3. Persistent Storage
 
-Recommended providers:
+Use a hosted Postgres database when the site needs to keep records across deploys.
 
-- Supabase Auth
-- Clerk
-- Auth0
+Recommended first provider:
 
-Current local behavior is a demo account stored in browser local storage.
+- Supabase Postgres
 
-## 4. Payments
+For the current version, the app stores the model record in `pick-log.json`.
 
-Use Stripe Checkout. The backend endpoint `/api/checkout` is already scaffolded.
+## 4. Professional Data Feeds
 
-Required:
+Recommended upgrades before charging for reports:
 
-- `STRIPE_SECRET_KEY`
-- `STRIPE_PRICE_ID`
-- `PUBLIC_BASE_URL`
+- Historical closing odds
+- Confirmed lineups
+- Weather and park factors
+- Bullpen usage and rest
+- Scheduled daily result settlement
 
 ## 5. Scheduled Updates
 

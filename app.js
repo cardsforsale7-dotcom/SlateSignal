@@ -4,7 +4,9 @@ const state = {
   games: [],
   odds: [],
   pitcherStats: new Map(),
-  source: "Loading MLB data..."
+  source: "Loading MLB data...",
+  dataUpdatedAt: null,
+  oddsUpdatedAt: null
 };
 
 const homeTeam = document.querySelector("#homeTeam");
@@ -17,6 +19,7 @@ const recordCard = document.querySelector("#recordCard");
 const backtestSummary = document.querySelector("#backtestSummary");
 const backtestDays = document.querySelector("#backtestDays");
 const historicalBacktest = document.querySelector("#historicalBacktest");
+const whyLeanList = document.querySelector("#whyLeanList");
 const draftkingsManual = document.querySelector("#draftkingsManual");
 const fanduelManual = document.querySelector("#fanduelManual");
 const draftkingsTeam = document.querySelector("#draftkingsTeam");
@@ -24,12 +27,6 @@ const fanduelTeam = document.querySelector("#fanduelTeam");
 const chatForm = document.querySelector("#chatForm");
 const chatInput = document.querySelector("#chatInput");
 const chatMessages = document.querySelector("#chatMessages");
-const accountForm = document.querySelector("#accountForm");
-const accountEmail = document.querySelector("#accountEmail");
-const accountStatus = document.querySelector("#accountStatus");
-const subscriptionStatus = document.querySelector("#subscriptionStatus");
-const subscriptionDetail = document.querySelector("#subscriptionDetail");
-const checkoutButton = document.querySelector("#checkoutButton");
 const MODEL_VERSION = "v0.4 calibrated pregame";
 
 const formatSigned = (value) => `${value >= 0 ? "+" : ""}${value.toFixed(1)}`;
@@ -129,6 +126,17 @@ function localISODate(offsetDays = 0) {
   return `${year}-${month}-${day}`;
 }
 
+function formatFreshness(isoString) {
+  if (!isoString) return "Data freshness unavailable.";
+  return new Date(isoString).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short"
+  });
+}
+
 function normalizeTeam(apiTeam) {
   return {
     id: Number(apiTeam.id),
@@ -176,6 +184,8 @@ async function loadRealData() {
     state.odds = data.odds || [];
     state.source = data.source;
     state.oddsSource = data.oddsSource;
+    state.dataUpdatedAt = data.generatedAt;
+    state.oddsUpdatedAt = data.oddsUpdatedAt;
     state.teamStats = new Map(
       Object.entries(data.teamStats || {}).map(([id, stats]) => [Number(id), { ...stats, hasData: true }])
     );
@@ -190,13 +200,13 @@ async function loadRealData() {
     state.pitcherStats = new Map();
     state.source = "Using real MLB team names locally. Start the Node server for live MLB schedule and standings.";
     state.oddsSource = "Start the Node server and add THE_ODDS_API_KEY to compare DraftKings/FanDuel.";
+    state.dataUpdatedAt = null;
+    state.oddsUpdatedAt = null;
   }
 
   fillTeams();
   renderGames();
   renderPickLog();
-  renderAppStatus();
-  renderDemoAccount();
 }
 
 function scheduleRefresh() {
@@ -514,6 +524,17 @@ function pickReasons(model) {
   return factors.slice(0, 3).map((factor) => `${factor.label}: ${formatSigned(factor.value)}`);
 }
 
+function detailedPickReasons(model, home, away) {
+  const leaderSide = model.leader.id === home.id ? "home side" : "away side";
+  const reasons = pickReasons(model);
+  return [
+    `${model.leader.name} is the current ${leaderSide} lean at ${model.modelLeaderProbability.toFixed(1)}% model probability.`,
+    `Fair line is ${formatAmerican(model.fairLine)}, with signal strength capped at ${model.confidence.toFixed(0)}% to avoid false precision.`,
+    ...reasons,
+    `Risk label: ${model.risk}. This should be compared against market price and later final results.`
+  ];
+}
+
 function renderBookEdge(bookKey, labelId, detailId, manualInput, teamSelect, event, home, away, modelHomeProbability) {
   const label = document.querySelector(labelId);
   const detail = document.querySelector(detailId);
@@ -565,6 +586,8 @@ function updateDashboard() {
   document.querySelector("#watchTag").textContent = game?.abstractState === "Live" ? "Live score" : "Pregame model";
   document.querySelector("#liveStatus").textContent = liveStatusText(game);
   document.querySelector("#dataSource").textContent = state.source;
+  document.querySelector("#dataFreshness").textContent =
+    `MLB data updated ${formatFreshness(state.dataUpdatedAt)} Odds ${state.oddsUpdatedAt ? `updated ${formatFreshness(state.oddsUpdatedAt)}` : "not connected"}.`;
   document.querySelector("#oddsSource").textContent = state.oddsSource;
   document.querySelector("#fairLine").textContent = formatAmerican(model.fairLine);
   document.querySelector("#fairLineDetail").textContent = `${model.leader.name} at ${model.modelLeaderProbability.toFixed(1)}% model probability.`;
@@ -574,6 +597,9 @@ function updateDashboard() {
   renderBookEdge("fanduel", "#fanduelLine", "#fanduelEdge", fanduelManual, fanduelTeam, oddsEvent, home, away, model.modelHomeProbability);
   document.querySelector("#generatedRead").textContent =
     `${model.leader.name} is the ${model.risk} side. This is a conservative pregame model lean, not an in-game projection. Live scores update from MLB; live market prices need an odds feed.`;
+  whyLeanList.innerHTML = detailedPickReasons(model, home, away)
+    .map((reason) => `<li>${escapeHTML(reason)}</li>`)
+    .join("");
 }
 
 function renderFavoriteBets() {
@@ -733,6 +759,15 @@ function renderBacktest(log) {
         <span>${escapeHTML(day.date)}</span>
         <strong>${day.wins || 0}-${day.losses || 0}</strong>
         <p>${day.pending || 0} pending · ${day.picks?.length || 0} saved leans · ${day.roi === null || day.roi === undefined ? "no captured ROI" : `${day.roi > 0 ? "+" : ""}${day.roi}% ROI`} · ${escapeHTML(day.status || "pending")}</p>
+        <div class="result-lines">
+          ${(day.picks || []).slice(0, 4).map((pick) => `
+            <div>
+              <span>${escapeHTML(pick.matchup || "Matchup")}</span>
+              <strong>${escapeHTML(pick.pickTeamName || "Lean pending")}</strong>
+              <small>${escapeHTML(pick.finalScore || "Final pending")} · ${escapeHTML(pick.result || "pending")}</small>
+            </div>
+          `).join("")}
+        </div>
       </article>
     `)
     .join("");
@@ -874,35 +909,6 @@ function addChatMessage(text, type) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function renderDemoAccount() {
-  const legacyEmail = window.localStorage.getItem("edgeboardEmail");
-  if (legacyEmail && !window.localStorage.getItem("slatesignalEmail")) {
-    window.localStorage.setItem("slatesignalEmail", legacyEmail);
-    window.localStorage.removeItem("edgeboardEmail");
-  }
-  const email = window.localStorage.getItem("slatesignalEmail");
-  if (email) {
-    accountEmail.value = email;
-    accountStatus.textContent = email;
-  } else {
-    accountStatus.textContent = "Signed out";
-  }
-}
-
-async function renderAppStatus() {
-  try {
-    const status = await getJSON("/api/status");
-    subscriptionStatus.textContent = status.payments?.configured ? "Stripe ready" : "Free plan";
-    subscriptionDetail.textContent = status.payments?.configured
-      ? "Stripe checkout is configured on this server."
-      : "Checkout is a roadmap preview. Add auth, terms, STRIPE_SECRET_KEY, STRIPE_PRICE_ID, and PUBLIC_BASE_URL before accepting payments.";
-    checkoutButton.disabled = false;
-  } catch {
-    subscriptionStatus.textContent = "Local mode";
-    subscriptionDetail.textContent = "Start the Node server to check payment/auth configuration.";
-  }
-}
-
 function renderGames() {
   if (!state.games.length) {
     gamesList.innerHTML = `<p class="empty-state">No MLB games were returned for today, or live data is unavailable.</p>`;
@@ -938,26 +944,6 @@ fanduelManual.addEventListener("input", updateDashboard);
 draftkingsTeam.addEventListener("change", updateDashboard);
 fanduelTeam.addEventListener("change", updateDashboard);
 themeToggle.addEventListener("click", () => document.body.classList.toggle("compact"));
-accountForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const email = accountEmail.value.trim();
-  if (!email) return;
-  window.localStorage.setItem("slatesignalEmail", email);
-  renderDemoAccount();
-});
-checkoutButton.addEventListener("click", async () => {
-  subscriptionDetail.textContent = "Checking checkout configuration...";
-  try {
-    const session = await postJSON("/api/checkout", {});
-    if (session.url) {
-      window.location.href = session.url;
-      return;
-    }
-    subscriptionDetail.textContent = session.message || "Checkout is not configured yet.";
-  } catch {
-    subscriptionDetail.textContent = "Checkout preview is unavailable while the server is unreachable.";
-  }
-});
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const question = chatInput.value.trim();

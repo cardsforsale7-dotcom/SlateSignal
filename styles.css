@@ -224,6 +224,14 @@ select {
   margin: 18px 0 0;
 }
 
+.data-freshness {
+  color: #0f67bd;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.45;
+  margin: 8px 0 0;
+}
+
 .model-meta {
   display: flex;
   flex-wrap: wrap;
@@ -514,6 +522,58 @@ select {
   line-height: 1.45;
   margin: 10px 0 0;
   padding-left: 18px;
+}
+
+.why-panel {
+  min-height: 100%;
+}
+
+.why-driver-list {
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+  line-height: 1.45;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.result-lines {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.result-lines div {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.result-lines span,
+.result-lines strong,
+.result-lines small {
+  display: block;
+}
+
+.result-lines span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+  text-transform: none;
+}
+
+.result-lines strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.result-lines small {
+  color: var(--muted);
+  line-height: 1.35;
 }
 
 .backtest-summary {

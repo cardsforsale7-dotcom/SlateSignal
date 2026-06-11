@@ -92,8 +92,7 @@ Good next build steps:
 - Add bullpen usage and rest calculations
 - Add weather and ballpark factors
 - Add odds movement from a paid provider
-- Add user accounts and saved watchlists
-- Add Stripe subscriptions for the Pro tier
+- Add saved watchlists after persistent storage is in place
 - Add a historical sportsbook odds provider so older model results can use true closing prices instead of flat even-money assumptions
 - Add shareable matchup report pages for baseball creators
 

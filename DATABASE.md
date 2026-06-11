@@ -7,21 +7,6 @@ Recommended first database: Supabase Postgres.
 ## Tables
 
 ```sql
-create table users (
-  id uuid primary key,
-  email text unique not null,
-  created_at timestamptz default now()
-);
-
-create table subscriptions (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references users(id),
-  stripe_customer_id text,
-  stripe_subscription_id text,
-  status text not null default 'free',
-  current_period_end timestamptz
-);
-
 create table model_runs (
   id uuid primary key default gen_random_uuid(),
   model_version text not null,

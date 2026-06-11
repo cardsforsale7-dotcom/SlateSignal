@@ -8,9 +8,6 @@ const PICK_LOG_PATH = path.join(ROOT, "pick-log.json");
 const MLB_BASE = "https://statsapi.mlb.com/api/v1";
 const ODDS_API_KEY = process.env.THE_ODDS_API_KEY || "";
 const ODDS_BASE = "https://api.the-odds-api.com/v4";
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
-const STRIPE_PRICE_ID = process.env.STRIPE_PRICE_ID || "";
-const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -669,63 +666,6 @@ async function historicalBacktest(days = 14) {
   return data;
 }
 
-function appStatus() {
-  return {
-    auth: {
-      provider: process.env.AUTH_PROVIDER || "demo-local",
-      configured: Boolean(process.env.AUTH_PROVIDER)
-    },
-    payments: {
-      provider: "stripe",
-      configured: Boolean(STRIPE_SECRET_KEY && STRIPE_PRICE_ID)
-    },
-    odds: {
-      provider: "the-odds-api",
-      configured: Boolean(ODDS_API_KEY)
-    },
-    ai: {
-      provider: "openai",
-      configured: Boolean(process.env.OPENAI_API_KEY)
-    },
-    storage: {
-      provider: process.env.DATABASE_URL ? "database" : "local-json",
-      configured: true
-    }
-  };
-}
-
-async function createCheckoutSession() {
-  if (!STRIPE_SECRET_KEY || !STRIPE_PRICE_ID) {
-    return {
-      configured: false,
-      message: "Stripe is not configured. Add STRIPE_SECRET_KEY, STRIPE_PRICE_ID, and PUBLIC_BASE_URL in production."
-    };
-  }
-
-  const params = new URLSearchParams({
-    mode: "subscription",
-    "line_items[0][price]": STRIPE_PRICE_ID,
-    "line_items[0][quantity]": "1",
-    success_url: `${PUBLIC_BASE_URL}/?checkout=success#account`,
-    cancel_url: `${PUBLIC_BASE_URL}/?checkout=cancel#account`
-  });
-
-  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: params
-  });
-
-  if (!response.ok) {
-    throw new Error(`Stripe checkout failed: ${response.status}`);
-  }
-
-  return response.json();
-}
-
 async function analystChat(req) {
   const body = await readRequestBody(req);
   if (!process.env.OPENAI_API_KEY) {
@@ -805,10 +745,12 @@ async function buildSummary() {
     timestamp: now,
     data: {
       date,
+      generatedAt: new Date(now).toISOString(),
       source: `Live MLB Stats API data for ${date}. Ratings use current standings and run differential.`,
       oddsSource: ODDS_API_KEY
         ? "DraftKings/FanDuel odds via The Odds API."
         : "Add THE_ODDS_API_KEY to compare against DraftKings and FanDuel odds.",
+      oddsUpdatedAt: ODDS_API_KEY ? new Date(now).toISOString() : null,
       teams: teams.teams || [],
       games,
       teamStats: flattenStandings(standings),
@@ -867,14 +809,6 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname.startsWith("/api/pick-log/today") && req.method === "POST") {
       sendJSON(res, await saveTodaysPicks(req));
-      return;
-    }
-    if (url.pathname.startsWith("/api/status")) {
-      sendJSON(res, appStatus());
-      return;
-    }
-    if (url.pathname.startsWith("/api/checkout") && req.method === "POST") {
-      sendJSON(res, await createCheckoutSession());
       return;
     }
     if (url.pathname.startsWith("/api/analyst/chat") && req.method === "POST") {

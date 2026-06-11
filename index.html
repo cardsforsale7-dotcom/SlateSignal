@@ -21,7 +21,7 @@
         <a href="#today">Today</a>
         <a href="#results">Results</a>
         <a href="#methodology">Methodology</a>
-        <a href="#account">Account</a>
+        <a href="#project-notes">Project</a>
       </nav>
       <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle display density">
         ◐
@@ -61,6 +61,7 @@
               </label>
             </div>
             <p class="data-source" id="dataSource">Loading MLB data...</p>
+            <p class="data-freshness" id="dataFreshness">Data freshness will appear after load.</p>
           </section>
 
           <section class="score-card" aria-label="Projected edge">
@@ -104,7 +105,7 @@
           <article>
             <span>Product path</span>
             <h3>From portfolio project to paid research tool.</h3>
-            <p>The roadmap includes persistent accounts, saved watchlists, historical odds, lineup data, alerts, and Stripe-powered paid tiers.</p>
+            <p>The roadmap includes saved watchlists, historical odds, lineup data, alerts, and paid research reports once the analytics foundation is proven.</p>
           </article>
         </div>
       </section>
@@ -179,6 +180,16 @@
               Choose teams to generate a matchup read with strengths, risks,
               and a clear model explanation.
             </p>
+          </section>
+
+          <section class="panel why-panel" aria-label="Why this lean">
+            <div class="panel-title">
+              <h3>Why this lean?</h3>
+              <span>Model drivers</span>
+            </div>
+            <ul class="why-driver-list" id="whyLeanList">
+              <li>Select a matchup to see the main model drivers.</li>
+            </ul>
           </section>
 
           <section class="panel stat-panel" aria-label="Team comparison">
@@ -394,56 +405,34 @@
         </div>
       </section>
 
-      <section class="market-section" id="account" aria-label="Account and subscription">
+      <section class="market-section" id="project-notes" aria-label="Project notes">
         <div class="section-heading">
-          <p class="eyebrow">Product roadmap</p>
-          <h2>Accounts and paid tools are the next production layer.</h2>
+          <p class="eyebrow">Project notes</p>
+          <h2>What is built now, and what would make it production-grade.</h2>
           <p>
-            The current site is a working analytics product. The account and pricing
-            components below show the planned subscription path, not an active checkout flow.
+            This section is written for interviews: it separates working features from
+            clear next steps without pretending future business features are already live.
           </p>
-        </div>
-
-        <div class="account-grid">
-          <article class="account-card">
-            <span>Demo account</span>
-            <h3 id="accountStatus">Signed out</h3>
-            <form id="accountForm">
-              <label>
-                Email
-                <input id="accountEmail" type="email" placeholder="you@example.com" />
-              </label>
-              <button type="submit">Save demo account</button>
-            </form>
-          </article>
-          <article class="account-card">
-            <span>Subscription roadmap</span>
-            <h3 id="subscriptionStatus">Free plan</h3>
-            <p id="subscriptionDetail">
-              Checkout is intentionally disabled until persistent accounts, terms, and payment settings are production-ready.
-            </p>
-            <button id="checkoutButton" type="button">Preview checkout status</button>
-          </article>
         </div>
 
         <div class="market-grid">
           <article>
-            <span class="plan-badge">Free</span>
-            <h3>Fan dashboard</h3>
-            <p>Basic matchup ratings, simple projections, and shareable game previews.</p>
-            <strong>$0</strong>
+            <span class="plan-badge">Built</span>
+            <h3>Live MLB dashboard</h3>
+            <p>Real team data, schedule data, probable pitcher context, fair-line comparison, live score status, and saved model leans.</p>
+            <strong>Now</strong>
           </article>
           <article class="featured-plan">
-            <span class="plan-badge">Pro</span>
-            <h3>Premium edge reports</h3>
-            <p>Advanced filters, saved watchlists, alerts, fantasy overlays, and deeper trend cards.</p>
-            <strong>$9/mo</strong>
+            <span class="plan-badge">Next</span>
+            <h3>Professional data layer</h3>
+            <p>Persistent database storage, closing odds, lineup confirmations, bullpen rest, weather, and scheduled background jobs.</p>
+            <strong>Roadmap</strong>
           </article>
           <article>
-            <span class="plan-badge">Teams</span>
-            <h3>Creator and coach tools</h3>
-            <p>Exportable reports, branded embeds, player notes, and private data uploads.</p>
-            <strong>$29/mo</strong>
+            <span class="plan-badge">Business</span>
+            <h3>Paid research reports</h3>
+            <p>The monetized version would sell deeper reports, alerts, saved watchlists, and shareable matchup pages after results are validated.</p>
+            <strong>Later</strong>
           </article>
         </div>
       </section>
@@ -455,8 +444,8 @@
         </div>
         <ul>
           <li>It has a clear audience: fans, fantasy players, sports creators, and small coaching staffs.</li>
-          <li>It can grow technically: data ingestion, APIs, prediction models, auth, payments, and alerts.</li>
-          <li>It can grow as a business: free dashboard, paid research reports, alerts, and creator tools.</li>
+          <li>It can grow technically: data ingestion, APIs, prediction models, persistent storage, scheduled jobs, and alerts.</li>
+          <li>It can grow as a business: free dashboard, paid research reports, alerts, and creator tools after the model has a trustworthy record.</li>
         </ul>
       </section>
 
